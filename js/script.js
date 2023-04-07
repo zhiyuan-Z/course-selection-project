@@ -6,7 +6,6 @@ class CourseSelectionView {
   }
 
   renderCourseLists(courseList) {
-    this.availableCourseList.innerText = "";
     console.log("available course list", courseList);
     courseList.forEach((course) => {
       const courseItem = this.createCourseElement(course);

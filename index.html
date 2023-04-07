@@ -5,22 +5,30 @@
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="css/html5reset.css">
+  <link rel="stylesheet" href="css/style.css">
   <script defer src="js/api.js"></script>
   <script defer src="js/script.js"></script>
 </head>
 
 <body>
-  <h1>Class Selection Page</h1>
-  <form class="course-selection__form">
-    <div class="course__lists">
-      <div class="course__list--available"></div>
-      <div class="course__list--selected"></div>
-    </div>
-    <div>
-      <div>Total Credit: <span id="total-credit">0</span></div>
-      <button type="submit">Select</button>
-    </div>
-  </form>
+  <main>
+    <h1>Class Selection Page</h1>
+    <form class="course-selection__form">
+      <div class="course__lists">
+        <div class="course__list--available">
+          <h2>Available Courses</h2>
+        </div>
+        <div class="course__list--selected">
+          <h2>Selected Courses</h2>
+        </div>
+      </div>
+      <div class="course-selection__footer">
+        <div>Total Credit: <span id="total-credit">0</span></div>
+        <button type="submit">Select</button>
+      </div>
+    </form>
+  </main>
 </body>
 
 </html>
