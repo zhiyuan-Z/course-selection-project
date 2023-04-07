@@ -3,6 +3,7 @@ class CourseSelectionView {
     this.selectionForm = document.querySelector(".course-selection__form");
     this.availableCourseList = document.querySelector(".course__list--available");
     this.selectedCourseList = document.querySelector(".course__list--selected");
+    this.selectedCredit = document.querySelector("#total-credit");
   }
 
   renderCourseLists(courseList) {
@@ -12,9 +13,6 @@ class CourseSelectionView {
       if (course.selected) {
         this.selectedCourseList.appendChild(courseItem);
       } else {
-        courseItem.addEventListener('click', () => {
-          courseItem.classList.toggle('course__item--selected');
-        })
         this.availableCourseList.appendChild(courseItem);
       }
     })
@@ -31,7 +29,6 @@ class CourseSelectionView {
     console.log(courses);
     for (let i = 0; i < courses.length; i++) {
       const element = courses[i];
-      console.log('!!!',element);
       const courseId = element.getAttribute('courseId');
       if (courseId === id) {
         element.remove();
@@ -50,6 +47,7 @@ class CourseSelectionView {
     courseElem.classList.add(`course__item--${newCourse.required ? "Compulsory" : "Elective"}`);
     courseType.innerText = `Course Type: ${newCourse.required ? "Compulsory" : "Elective"}`;
     const courseCredit = document.createElement("div");
+    courseElem.setAttribute('credit', newCourse.credit);
     courseCredit.innerText = `Course Credit: ${newCourse.credit}`;
     courseElem.appendChild(courseName);
     courseElem.appendChild(courseType);
@@ -62,6 +60,7 @@ class CourseSelectionView {
 class CourseSelectionModel {
   #courseList;
   #selectedCourseList;
+  selectedCredit;
   constructor() {
     this.#courseList = [];
     this.#selectedCourseList = [];
@@ -70,13 +69,21 @@ class CourseSelectionModel {
   async fetchCourseList() {
     const courseList = await API.getCourseList();
     this.courseList = courseList;
+    this.#selectedCourseList = courseList.filter(course => course.selected);
+    console.log(this.#selectedCourseList);
     return courseList;
   }
 
+  getCredit() {
+    this.selectedCredit = this.#selectedCourseList.reduce((total, item) => total + item.credit, 0)
+    return this.selectedCredit;
+  }
+
   async selectCourse(id) {
-    const originalCourse = await await API.getCourse(id);
+    const originalCourse = await API.getCourse(id);
     const updatedCourse = await API.updateCourse(id, { ...originalCourse, selected: true });
     this.#selectedCourseList.push(updatedCourse);
+    console.log('credits', this.getCredit());
     return updatedCourse;
   }
 }
@@ -92,15 +99,40 @@ class CourseSelectionController {
     this.model.fetchCourseList().then(() => {
       const courseList = this.model.courseList;
       this.view.renderCourseLists(courseList);
+      this.setUpGetCredit();
     });
 
     this.setUpSubmit();
   }
 
+  setUpGetCredit() {
+    const selectedCredit = this.model.getCredit();
+    this.view.selectedCredit.innerText = this.model.selectedCredit;
+    const courses = document.querySelectorAll('.course__list--available > .course__item');
+    console.log(courses);
+    courses.forEach(course => {
+      if (course.classList.contains('course__item')) {
+        course.addEventListener('click', () => {
+          if (course.classList.contains('course__item--selected')) {
+            this.model.selectedCredit -= parseInt(course.getAttribute('credit'));
+            console.log(this.model.selectedCredit);
+            course.classList.remove('course__item--selected');
+
+          } else if (this.model.selectedCredit + parseInt(course.getAttribute('credit')) > 18) {
+            alert('You can only choose up to 18 credits in one semester');
+          } else {
+            this.model.selectedCredit += parseInt(course.getAttribute('credit'));
+            console.log(this.model.selectedCredit);
+            course.classList.add('course__item--selected');
+          }
+          this.view.selectedCredit.innerText = this.model.selectedCredit;
+        })
+      }
+    })
+  }
+
   setUpSubmit() {
-    console.log('!')
     this.view.selectionForm.addEventListener('submit', (e) => {
-      console.log('!!')
       e.preventDefault();
       const selectedCourses = document.querySelectorAll(".course__item--selected");
       console.log(selectedCourses);
