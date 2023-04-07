@@ -1,0 +1,1 @@
+Please use "json-server db.json --id courseId" to start [this json-server](https://github.com/zhiyuan-Z/course-selection-json-server) before running
