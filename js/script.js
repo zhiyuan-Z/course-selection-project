@@ -4,6 +4,7 @@ class CourseSelectionView {
     this.availableCourseList = document.querySelector(".course__list--available");
     this.selectedCourseList = document.querySelector(".course__list--selected");
     this.selectedCredit = document.querySelector("#total-credit");
+    this.submitBtn = document.querySelector("#form-submit");
   }
 
   renderCourseLists(courseList) {
@@ -61,9 +62,12 @@ class CourseSelectionModel {
   #courseList;
   #selectedCourseList;
   selectedCredit;
+  // preselectCredit;
   constructor() {
     this.#courseList = [];
     this.#selectedCourseList = [];
+    this.selectedCredit = 0;
+    // this.preselectCredit = 0;
   }
 
   async fetchCourseList() {
@@ -107,7 +111,7 @@ class CourseSelectionController {
 
   setUpGetCredit() {
     const selectedCredit = this.model.getCredit();
-    this.view.selectedCredit.innerText = this.model.selectedCredit;
+    this.view.selectedCredit.innerText = selectedCredit;
     const courses = document.querySelectorAll('.course__list--available > .course__item');
     console.log(courses);
     courses.forEach(course => {
@@ -115,6 +119,7 @@ class CourseSelectionController {
         course.addEventListener('click', () => {
           if (course.classList.contains('course__item--selected')) {
             this.model.selectedCredit -= parseInt(course.getAttribute('credit'));
+            // this.model.preselectCredit -= parseInt(course.getAttribute('credit'));
             console.log(this.model.selectedCredit);
             course.classList.remove('course__item--selected');
 
@@ -122,6 +127,7 @@ class CourseSelectionController {
             alert('You can only choose up to 18 credits in one semester');
           } else {
             this.model.selectedCredit += parseInt(course.getAttribute('credit'));
+            // this.model.preselectCredit += parseInt(course.getAttribute('credit'));
             console.log(this.model.selectedCredit);
             course.classList.add('course__item--selected');
           }
@@ -132,17 +138,27 @@ class CourseSelectionController {
   }
 
   setUpSubmit() {
-    this.view.selectionForm.addEventListener('submit', (e) => {
+    this.view.submitBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      const selectedCourses = document.querySelectorAll(".course__item--selected");
-      console.log(selectedCourses);
-      selectedCourses.forEach(course => {
-        this.model.selectCourse(course.getAttribute('courseId')).then(newCourse => {
-          this.view.appendCourse(newCourse);
-          this.view.removeCourse(course.getAttribute('courseId'));
-          console.log(newCourse);
-        })
-      })
+      e.target.setAttribute("disabled", "true");
+      if (confirm(`You have chosen ${this.model.selectedCredit} credits for this semester. You cannot change once you submit. Do you want to confirm?`)) {
+        const selectedCourses = document.querySelectorAll(".course__item--selected");
+        console.log(selectedCourses);
+        (async () => {
+          selectedCourses.forEach(course => {
+            this.model.selectCourse(course.getAttribute('courseId')).then(newCourse => {
+              this.view.appendCourse(newCourse);
+              this.view.removeCourse(course.getAttribute('courseId'));
+              console.log(newCourse);
+            })
+          })
+        })().catch((err) => {
+          console.log(err);
+          e.target.removeAttribute("disabled");
+        });
+      } else {
+        e.target.removeAttribute("disabled");
+      }
     })
   }
 }
